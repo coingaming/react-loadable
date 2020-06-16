@@ -1,7 +1,7 @@
 'use strict';
 const url = require('url');
 
-function buildManifest(compiler, compilation) {
+function buildManifest(compiler, compilation, exclude) {
   let context = compiler.options.context;
   let manifest = {};
 
@@ -11,16 +11,22 @@ function buildManifest(compiler, compilation) {
         let id = module.id;
         let name = typeof module.libIdent === 'function' ? module.libIdent({ context }) : null;
         let publicPath = url.resolve(compilation.outputOptions.publicPath || '', file);
-        
+
         let currentModule = module;
         if (module.constructor.name === 'ConcatenatedModule') {
           currentModule = module.rootModule;
         }
-        if (!manifest[currentModule.rawRequest]) {
-          manifest[currentModule.rawRequest] = [];
-        }
+        const shouldExclude = exclude.some(pattern =>
+            pattern.test(currentModule.rawRequest)
+        );
 
-        manifest[currentModule.rawRequest].push({ id, name, file, publicPath });
+        if (!shouldExclude) {
+            if (!manifest[currentModule.rawRequest]) {
+                manifest[currentModule.rawRequest] = []
+            }
+
+            manifest[currentModule.rawRequest].push({ id, name, file, publicPath })
+        }
       });
     });
   });
@@ -31,20 +37,23 @@ function buildManifest(compiler, compilation) {
 class ReactLoadablePlugin {
   constructor(opts = {}) {
     this.filename = opts.filename;
+    this.exclude = opts.exclude || []
   }
 
   apply(compiler) {
     compiler.plugin('emit', (compilation, callback) => {
-      const manifest = buildManifest(compiler, compilation);
-      var json = JSON.stringify(manifest, null, 2);
-      compilation.assets[this.filename] = {      
+      const manifest = buildManifest(compiler, compilation, this.exclude);
+      const json = JSON.stringify(manifest, null, 2);
+
+      compilation.assets[this.filename] = {
         source() {
           return json;
         },
         size() {
-          return json.length
+          return json.length;
         }
-      }
+      };
+
       callback();
     });
   }

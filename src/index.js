@@ -158,7 +158,7 @@ function createLoadableComponent(loadFn, options) {
       return init();
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
       this._loadModule();
     }
 
@@ -183,7 +183,7 @@ function createLoadableComponent(loadFn, options) {
         }
 
         this.setState(newState);
-      }
+      };
 
       if (typeof opts.delay === 'number') {
         if (opts.delay === 0) {

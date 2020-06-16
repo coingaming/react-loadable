@@ -1,5 +1,5 @@
 {
-  "name": "react-loadable",
+  "name": "@heathmont/react-loadable",
   "version": "5.5.0",
   "description": "A higher order component for loading components with promises",
   "main": "lib/index.js",
@@ -15,7 +15,11 @@
     "test": "jest --coverage",
     "build": "babel src -d lib",
     "start": "yarn build && webpack && babel-node example/server.js",
-    "prepare": "yarn build"
+    "prepare": "yarn build",
+    "pb:major": "npm version major && npm publish && git push && git push --tags",
+    "pb:minor": "npm version minor && npm publish && git push && git push --tags",
+    "pb:patch": "npm version patch && npm publish && git push && git push --tags",
+    "pack": "npm run build && npm pack"
   },
   "dependencies": {
     "prop-types": "^15.6.2"
